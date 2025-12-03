@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Lists Fill-in-the-Blank Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+        }
+        h2 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        #user-info-form label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+        #user-info-form input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        #start-button {
+            background-color: #007bff;
+        }
+        .question-block {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            white-space: pre-wrap; /* Allows line breaks in the question text */
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: Consolas, monospace;
+        }
+        .blank-input {
+            width: 80px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 5px;
+            margin: 0 5px;
+            font-family: Consolas, monospace;
+        }
+        .feedback-blank {
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .correct-answer {
+            color: green;
+        }
+        .incorrect-answer {
+            color: red;
+        }
+        .next-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .next-btn:hover:not(:disabled) {
+            background-color: #218838;
+        }
+        .next-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        #results {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+        #results h2 {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h2>🐍 Python Lists Fill-in-the-Blank Quiz</h2>
+    
+    <div id="user-info-form">
+        <p>Please enter your details to begin the quiz.</p>
+        <label for="student-name">Student Name:</label>
+        <input type="text" id="student-name" required>
+        
+        <label for="reg-number">Registration Number:</label>
+        <input type="text" id="reg-number" required>
+        
+        <button id="start-button" class="next-btn">Start Quiz</button>
+    </div>
+    
+    <div id="quiz" style="display: none;">
+        <div id="question-area">
+            </div>
+        <button id="submit-button" class="next-btn">Submit Quiz and View Score</button>
+    </div>
+    
+    <div id="results" style="display: none;">
+        </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            q: `A researcher wants to store a patient's temperature readings and access a specific reading.<br><br><code>patient_temps = [36.5, 37.8, 36.9, 38.2, 37.1]</code><br># Accessing the second reading (37.8) using positive indexing:<br><code>second_reading = patient_temps[_____]</code><br># Accessing the last reading (37.1) using negative indexing:<br><code>last_reading = patient_temps[_____]</code><br># Changing the first reading to 36.7:<br><code>patient_temps[0] = _____</code>`,
+            answers: ["1", "-1", "36.7"],
+            rationale: "The second reading is at index 1. The last element is at index -1. The first element (index 0) is reassigned to 36.7."
+        },
+        {
+            q: `A list <code>eeg_signals</code> contains 12 hours of EEG data. We want to analyze the readings from the middle four hours.<br><br><code>eeg_signals = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]</code><br># The middle four elements are at indices 4, 5, 6, 7.<br><code>middle_hours = eeg_signals[_____ : _____]</code>  # Slice must include index 7.<br># To extract every third signal reading from the beginning:<br><code>sampled_signals = eeg_signals[::_____]</code>`,
+            answers: ["4", "8", "3"],
+            rationale: "The slice needs to start at index 4 and stop before index 8 to get indices 4, 5, 6, 7. The step for every third reading is 3."
+        },
+        {
+            q: `A list tracks the quantity of four drugs. We need to remove the third drug and update the last.<br><br><code>drug_inventory = ['DrugA: 50', 'DrugB: 120', 'DrugC: 45', 'DrugD: 80']</code><br># Use the pop method to remove the third drug's entry and store it in removed_drug:<br><code>removed_drug = drug_inventory.pop(_____)</code><br># Update the quantity of 'DrugD: 80' to 'DrugD: 100' using negative indexing:<br><code>drug_inventory[_____] = 'DrugD: 100'</code>`,
+            answers: ["2", "-1"],
+            rationale: "The third element is at index 2 for `.pop()`. The last element is accessed via index -1."
+        },
+        {
+            q: `A list contains patient IDs, where the ID '0000' needs to be removed and a new ID '5001' added.<br><br><code>patient_ids = [1001, 2550, 0000, 3005, 4010]</code><br># Determine the index of the first occurrence of ID '0000':<br><code>error_index = patient_ids._____(0)</code><br># Remove the ID 0 using the method that takes the value (not the index):<br><code>patient_ids._____(0)</code><br># Add a new ID 5001 to the end of the list:<br><code>patient_ids._____(5001)</code>`,
+            answers: ["index", "remove", "append"],
+            rationale: "The `.index()` method finds the position of a value. The `.remove()` method removes the first instance of a value. The `.append()` method adds a single element to the end."
+        },
+        {
+            q: `A list stores the outcome of a clinical trial. We need to summarize the data.<br><br><code>trial_results = ['Success', 'Fail', 'Success', 'Success', 'Fail']</code><br># Count the number of 'Success' outcomes:<br><code>success_count = trial_results._____(_____)</code><br># Sort the list alphabetically (in-place modification):<br><code>trial_results._____()</code>`,
+            answers: ["count", "'Success'", "sort"],
+            rationale: "The `.count()` method requires the element being counted as an argument. The `.sort()` method sorts the list in place alphabetically/numerically."
+        },
+        {
+            q: `A list holds a DNA sequence. We want to extract the first three bases and the last two bases.<br><br><code>dna_sequence = ['A', 'G', 'C', 'T', 'G', 'A', 'T', 'C']</code><br># Extract the first three bases using a slice that starts at the default index (0):<br><code>first_three = dna_sequence[:_____]</code><br># Extract the last two bases using a slice that omits the stop index:<br><code>last_two = dna_sequence[_____ :]</code><br># To get a reversed list (using slicing, not a method):<br><code>reversed_seq = dna_sequence[::_____]</code>`,
+            answers: ["3", "-2", "-1"],
+            rationale: "Slicing up to index 3 (exclusive) gives the first three elements. Index -2 accesses the second-to-last element. A step of -1 reverses the list."
+        },
+        {
+            q: `A list contains known infectious disease codes. We need to add a new priority code at the start and merge a batch of new codes at the end.<br><br><code>disease_codes = ['I10', 'J45', 'K21']</code><br># Insert the high-priority code 'A01' at the start of the list (index 0):<br><code>disease_codes._____(_____, 'A01')</code><br><code>new_codes_batch = ['B02', 'C03']</code><br># Merge all elements from the new_codes_batch list into the disease_codes list:<br><code>disease_codes._____(new_codes_batch)</code>`,
+            answers: ["insert", "0", "extend"],
+            rationale: "The `.insert()` method takes (index, value). The `.extend()` method merges elements from one list into another."
+        },
+        {
+            q: `When adding elements to a list, we must choose the correct method based on whether we are adding one item or many items.<br><br><code>data_points = [10, 20]</code><br># To add a single item 30 as a new element, use the _____ method:<br><code>data_points._____(30)</code><br># If you use the _____ method instead, it treats the iterable [40, 50] as multiple items:<br><code>data_points._____(_____)</code>`,
+            answers: ["append", "extend", "[40, 50]"],
+            rationale: "The `.append()` method adds a single element. The `.extend()` method adds all elements from an iterable, which must be passed as an argument."
+        },
+        {
+            q: `A list represents a patient record, with nested data for vitals.<br><br><code>patient_record = ['P55', 45, ['85bpm', '120/80'], 'Admitted']</code><br># Access the heart rate ('85bpm'):<br><code>heart_rate = patient_record[_____][_____]</code><br># Access the patient's age (45):<br><code>age = patient_record[_____]</code><br># Access the last item ('Admitted') using negative indexing:<br><code>status = patient_record[_____]</code>`,
+            answers: ["2", "0", "1", "-1"],
+            rationale: "Vitals list is at index 2; '85bpm' is the first element (index 0) of that list. Age is at index 1. The status is the last element (index -1)."
+        },
+        {
+            q: `Identify the list method and parameter to count the number of 'True' flags in a screening list.<br><br><code>screening_flags = [True, False, True, True, False]</code><br># Count the True flags:<br><code>true_count = screening_flags._____(_____)</code><br># To remove the element at index 4 (False) and return it:<br><code>removed_flag = screening_flags._____(_____)</code>`,
+            answers: ["count", "True", "pop", "4"],
+            rationale: "The `.count()` method takes the value to count. The `.pop()` method removes an element by index and returns it."
+        }
+    ];
+
+    let studentName = '';
+    let regNumber = '';
+
+    const userInfoForm = document.getElementById('user-info-form');
+    const startButton = document.getElementById('start-button');
+    const nameInput = document.getElementById('student-name');
+    const regInput = document.getElementById('reg-number');
+
+    const quizDiv = document.getElementById('quiz');
+    const questionArea = document.getElementById('question-area');
+    const submitButton = document.getElementById('submit-button');
+    const resultsDiv = document.getElementById('results');
+
+    // --- Quiz Logic Functions ---
+
+    startButton.addEventListener('click', () => {
+        studentName = nameInput.value.trim();
+        regNumber = regInput.value.trim();
+
+        if (studentName === '' || regNumber === '') {
+            alert('Please enter both your name and registration number to start the quiz.');
+            return;
+        }
+
+        userInfoForm.style.display = 'none';
+        quizDiv.style.display = 'block';
+        loadQuestions();
+    });
+
+    function loadQuestions() {
+        questionArea.innerHTML = '';
+        quizData.forEach((qData, qIndex) => {
+            const block = document.createElement('div');
+            block.className = 'question-block';
+            block.innerHTML = `<h3>Question ${qIndex + 1}</h3><div class="question-text">${formatQuestionText(qData.q, qIndex)}</div>`;
+            questionArea.appendChild(block);
+        });
+        submitButton.addEventListener('click', checkAnswers);
+    }
+
+    function formatQuestionText(text, qIndex) {
+        let blankCount = 0;
+        return text.replace(/_{5}/g, () => {
+            const inputId = `q${qIndex}_b${blankCount}`;
+            const input = `<input type="text" id="${inputId}" class="blank-input" data-q-index="${qIndex}" data-b-index="${blankCount}" disabled>`;
+            blankCount++;
+            return input;
+        }).replace(/<code>/g, '<span style="display:block; margin-top: 10px;"><code>').replace(/<\/code>/g, '</code></span>');
+    }
+
+    // Function to enable inputs after loading
+    function enableInputs() {
+        document.querySelectorAll('.blank-input').forEach(input => {
+            input.disabled = false;
+        });
+    }
+
+    function checkAnswers() {
+        let totalScore = 0;
+        let totalBlanks = 0;
+
+        quizData.forEach((qData, qIndex) => {
+            let correctBlanks = 0;
+            const answers = qData.answers;
+            const block = document.querySelector(`.question-block:nth-child(${qIndex + 1})`);
+            const feedbackContainer = document.createElement('div');
+            feedbackContainer.style.marginTop = '15px';
+            feedbackContainer.innerHTML = '<strong>Feedback:</strong><br>';
+            
+            let feedbackHTML = '';
+
+            answers.forEach((correctAnswer, bIndex) => {
+                totalBlanks++;
+                const inputId = `q${qIndex}_b${bIndex}`;
+                const inputElement = document.getElementById(inputId);
+                
+                if (!inputElement) return;
+
+                const submittedAnswer = inputElement.value.trim();
+                const isCorrect = submittedAnswer.toLowerCase() === correctAnswer.toLowerCase();
+                
+                inputElement.disabled = true; // Disable after submission
+
+                if (isCorrect) {
+                    correctBlanks++;
+                    feedbackHTML += `Blank ${bIndex + 1}: <span class="feedback-blank correct-answer">✔ Correct</span>. `;
+                } else {
+                    feedbackHTML += `Blank ${bIndex + 1}: <span class="feedback-blank incorrect-answer">✘ Incorrect. Correct was: ${correctAnswer}</span>. `;
+                }
+            });
+
+            totalScore += correctBlanks;
+            feedbackContainer.innerHTML += feedbackHTML;
+            
+            // Remove old feedback if re-submitting (not possible here, but good practice)
+            block.querySelectorAll('.feedback-block').forEach(el => el.remove());
+
+            feedbackContainer.className = 'feedback-block';
+            block.appendChild(feedbackContainer);
+        });
+
+        showResults(totalScore, totalBlanks);
+    }
+
+    function showResults(totalScore, totalBlanks) {
+        submitButton.style.display = 'none';
+        
+        const percentage = ((totalScore / totalBlanks) * 100).toFixed(1);
+        
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = `
+            <h2>Quiz Results</h2>
+            <p><strong>Student Name:</strong> ${studentName}</p>
+            <p><strong>Registration No:</strong> ${regNumber}</p>
+            <hr>
+            <p>Your Score: ${totalScore} out of ${totalBlanks} blanks filled correctly.</p>
+            <p>Percentage Score: ${percentage}%</p>
+            <p>${totalScore / totalBlanks > 0.8 ? 'Excellent! You have mastered the syntax and methods of Python lists.' : 'Good start! Review list slicing and specific method names (e.g., pop vs. remove) to improve your score.'}</p>
+        `;
+    }
+
+    // Initialize the quiz
+    document.addEventListener('DOMContentLoaded', () => {
+        // Use a small timeout to ensure DOM is ready before enabling
+        setTimeout(enableInputs, 100);
+    });
+</script>
+
+</body>
+</html>
