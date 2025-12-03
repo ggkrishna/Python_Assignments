@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Lists Quiz for Health Data Science</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h2 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .question-text {
+            font-size: 1.15em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+        .option-item {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .option-item:hover {
+            background-color: #d8dee3;
+        }
+        .option-item.selected {
+            border-color: #007bff;
+            background-color: #cce5ff;
+        }
+        .option-item.correct {
+            background-color: #d4edda;
+            border-color: #155724;
+            color: #155724;
+            font-weight: bold;
+        }
+        .option-item.incorrect {
+            background-color: #f8d7da;
+            border-color: #721c24;
+            color: #721c24;
+        }
+        #feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            border: 1px solid transparent;
+        }
+        #feedback.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        #feedback.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .next-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .next-btn:hover:not(:disabled) {
+            background-color: #218838;
+        }
+        .next-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        #results {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h2>🐍 Python Lists Quiz for Health Data Science</h2>
+    <div id="quiz">
+        <div id="question-area">
+            <p id="question-text" class="question-text"></p>
+            <ul id="options-list" class="options-list">
+                </ul>
+        </div>
+        <div id="feedback" style="display: none;">
+            </div>
+        <button class="next-btn" id="next-button" disabled>Next Question</button>
+    </div>
+    <div id="results" style="display: none;">
+        </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            q: "A list of patient weights (in kg) is defined as `weights = [75, 82, 65, 91, 58]`. What is the Python code to access the weight of the third patient in the list?",
+            options: ["weights[3]", "weights.get(2)", "weights[2]", "weights(2)"],
+            correct: 2,
+            rationale: "In Python, list indexing is zero-based, meaning the third element is located at index 2."
+        },
+        {
+            q: "The list of daily hospital bed occupancy is `daily_occupancy = [45, 52, 52, 49, 55]`. If the last recorded occupancy of 55 was found to be an error and should be 50, how should you update the list using negative indexing?",
+            options: ["daily_occupancy[-1] = 50", "daily_occupancy.update(50)", "daily_occupancy[5] = 50", "daily_occupancy = daily_occupancy[-1](50)"],
+            correct: 0,
+            rationale: "Negative index -1 correctly refers to the last element of the list, which can then be reassigned to the new value."
+        },
+        {
+            q: "You have a list of gene codes for a study: `gene_codes = ['ATXN1', 'HTT', 'FMR1', 'SMN1', 'DMD', 'CFTR']`. Which slice operation correctly extracts the second, third, and fourth codes (`'HTT'`, `'FMR1'`, `'SMN1'`)?",
+            options: ["gene_codes[1:4]", "gene_codes[2:5]", "gene_codes[1:3]", "gene_codes[1:-1]"],
+            correct: 0,
+            rationale: "The slice `[1:4]` starts at index 1 (inclusive) and goes up to, but does not include, index 4, correctly selecting elements at indices 1, 2, and 3."
+        },
+        {
+            q: "A list contains hourly sensor readings: `sensor_data = [10.1, 10.5, 11.2, 10.8, 11.5, 12.0, 11.8]`. You want to sample the data, retrieving only the reading from the first hour and every third hour after that (indices 0, 3, 6, etc.). Which slicing technique should you use?",
+            options: ["sensor_data[0:7:3]", "sensor_data[::2]", "sensor_data[3:]", "sensor_data[0:3]"],
+            correct: 0,
+            rationale: "This slice starts at index 0, ends before index 7 (the end of the list), and uses a step of 3, correctly selecting elements at indices 0, 3, and 6."
+        },
+        {
+            q: "You are tracking the outcome of five medical trials: `trial_outcomes = ['Fail', 'Success', 'Success', 'Fail']`. If a fifth trial's outcome, 'Success', is determined, which list method is the most efficient way to add this single item to the end of the existing list?",
+            options: ["trial_outcomes.extend(['Success'])", "trial_outcomes.insert(4, 'Success')", "trial_outcomes.add('Success')", "trial_outcomes.append('Success')"],
+            correct: 3,
+            rationale: "The `.append()` method is the standard and most efficient way to add a single element to the end of a Python list."
+        },
+        {
+            q: "A list of lab results is `results = [1.2, 2.5, 3.1, 4.7]`. You receive a new batch of results: `[5.0, 6.2]`. Which method should you use to add all elements of the new batch to the end of the original `results` list?",
+            options: ["results.join([5.0, 6.2])", "results.add_all([5.0, 6.2])", "results.extend([5.0, 6.2])", "results.append([5.0, 6.2])"],
+            correct: 2,
+            rationale: "The `.extend()` method is designed to add all elements from an iterable (like another list) to the end of the current list."
+        },
+        {
+            q: "A list stores the gender of patients in a small study: `genders = ['M', 'F', 'F', 'M', 'F', 'M', 'F']`. Which list method allows you to quickly determine the total number of female patients ('F')?",
+            options: ["genders.find('F')", "genders.index('F')", "genders.get_count('F')", "genders.count('F')"],
+            correct: 3,
+            rationale: "The `.count()` method is used to return the number of times a specified value appears in the list."
+        },
+        {
+            q: "The list of temporary error codes is `error_log = [101, 205, 300, 205, 412]`. A specific error code, 205, is known to be resolved and must be removed. Which list method will remove the *first* occurrence of 205 from the list?",
+            options: ["error_log.pop(205)", "del error_log[205]", "error_log.remove(205)", "error_log.clear(205)"],
+            correct: 2,
+            rationale: "The `.remove()` method is specifically designed to remove the first occurrence of a specified value from a list."
+        },
+        {
+            q: "A list contains the first and last patient's record numbers: `record_nums = [1001, 1005]`. A new record, 1003, needs to be placed *between* the existing two records. Which list method and arguments will accomplish this?",
+            options: ["record_nums.add(1, 1003)", "record_nums.insert(1, 1003)", "record_nums.append(1003, 1)", "record_nums[1:1] = [1003]"],
+            correct: 1,
+            rationale: "The `.insert()` method takes an index (1, the position after 1001) and a value (1003), correctly placing the new element between the existing ones."
+        },
+        {
+            q: "You have collected a list of average blood pressure readings: `bp_readings = [125, 110, 140, 105, 130]`. Which code snippet correctly sorts the list *in place* from lowest to highest?",
+            options: ["sorted(bp_readings)", "bp_readings.reverse()", "bp_readings.sort()", "bp_readings.order('asc')"],
+            correct: 2,
+            rationale: "The `.sort()` method sorts the list elements *in place* (modifies the original list) and by default uses ascending order."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionText = document.getElementById('question-text');
+    const optionsList = document.getElementById('options-list');
+    const feedbackDiv = document.getElementById('feedback');
+    const nextButton = document.getElementById('next-button');
+    const quizDiv = document.getElementById('quiz');
+    const resultsDiv = document.getElementById('results');
+
+    function loadQuestion() {
+        const currentQuestion = quizData[currentQuestionIndex];
+        
+        // Reset state
+        optionsList.innerHTML = '';
+        feedbackDiv.style.display = 'none';
+        nextButton.disabled = true;
+        answered = false;
+
+        // Display question number and text
+        questionText.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}: ${currentQuestion.q}`;
+
+        // Populate options
+        currentQuestion.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.textContent = option;
+            li.dataset.index = index;
+            li.addEventListener('click', () => selectAnswer(li, index));
+            optionsList.appendChild(li);
+        });
+    }
+
+    function selectAnswer(selectedLi, selectedIndex) {
+        if (answered) return;
+
+        // Clear previous selections and mark current
+        Array.from(optionsList.children).forEach(li => {
+            li.classList.remove('selected');
+        });
+        selectedLi.classList.add('selected');
+
+        // Enable next button for submission
+        nextButton.disabled = false;
+        nextButton.textContent = 'Submit Answer';
+        nextButton.onclick = () => checkAnswer(selectedIndex);
+    }
+
+    function checkAnswer(selectedIndex) {
+        if (answered) return;
+        answered = true;
+
+        const currentQuestion = quizData[currentQuestionIndex];
+        const isCorrect = selectedIndex === currentQuestion.correct;
+        const options = optionsList.children;
+        
+        // Display correctness on selected item
+        const selectedLi = options[selectedIndex];
+        selectedLi.classList.remove('selected');
+        selectedLi.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+        // Highlight the correct answer if incorrect choice was made
+        if (!isCorrect) {
+            options[currentQuestion.correct].classList.add('correct');
+        } else {
+            score++;
+        }
+
+        // Display feedback/rationale
+        feedbackDiv.textContent = (isCorrect ? 'Correct! ✅ ' : 'Incorrect. ❌ ') + currentQuestion.rationale;
+        feedbackDiv.className = isCorrect ? 'correct' : 'incorrect';
+        feedbackDiv.style.display = 'block';
+
+        // Disable all options after submission
+        Array.from(options).forEach(li => li.style.pointerEvents = 'none');
+
+        // Update button for next question
+        nextButton.textContent = currentQuestionIndex < quizData.length - 1 ? 'Next Question' : 'View Results';
+        nextButton.disabled = false;
+        nextButton.onclick = () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        };
+    }
+
+    function showResults() {
+        quizDiv.style.display = 'none';
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = `
+            <h2>Quiz Complete!</h2>
+            <p>You scored ${score} out of ${quizData.length} (${((score / quizData.length) * 100).toFixed(0)}%).</p>
+            <p>${score >= 8 ? 'Excellent work! You have a solid grasp of Python list manipulation for data science.' : 'Keep practicing! Review list slicing and methods to strengthen your foundational skills.'}</p>
+        `;
+    }
+
+    // Initialize the quiz
+    loadQuestion();
+</script>
+
+</body>
+</html>
