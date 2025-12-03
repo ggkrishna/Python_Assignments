@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Lists Fill-in-the-Blank Quiz</title>
+    <title>Python Lists Fill-in-the-Blank Quiz (FIXED)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -56,7 +56,7 @@
         .question-text {
             font-size: 1.1em;
             margin-bottom: 15px;
-            white-space: pre-wrap; /* Allows line breaks in the question text */
+            white-space: pre-wrap;
         }
         code {
             background-color: #eee;
@@ -72,6 +72,8 @@
             padding: 5px;
             margin: 0 5px;
             font-family: Consolas, monospace;
+            /* Key Fix: Ensure inputs are enabled */
+            pointer-events: auto !important;
         }
         .feedback-blank {
             font-weight: bold;
@@ -99,10 +101,6 @@
         }
         .next-btn:hover:not(:disabled) {
             background-color: #218838;
-        }
-        .next-btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
         }
         #results {
             text-align: center;
@@ -232,24 +230,18 @@
             block.innerHTML = `<h3>Question ${qIndex + 1}</h3><div class="question-text">${formatQuestionText(qData.q, qIndex)}</div>`;
             questionArea.appendChild(block);
         });
-        submitButton.addEventListener('click', checkAnswers);
+        submitButton.addEventListener('click', checkAnswers, { once: true }); // Ensure checkAnswers is called only once
     }
 
     function formatQuestionText(text, qIndex) {
         let blankCount = 0;
         return text.replace(/_{5}/g, () => {
             const inputId = `q${qIndex}_b${blankCount}`;
-            const input = `<input type="text" id="${inputId}" class="blank-input" data-q-index="${qIndex}" data-b-index="${blankCount}" disabled>`;
+            // Removed the 'disabled' attribute here to fix the issue!
+            const input = `<input type="text" id="${inputId}" class="blank-input" data-q-index="${qIndex}" data-b-index="${blankCount}">`;
             blankCount++;
             return input;
         }).replace(/<code>/g, '<span style="display:block; margin-top: 10px;"><code>').replace(/<\/code>/g, '</code></span>');
-    }
-
-    // Function to enable inputs after loading
-    function enableInputs() {
-        document.querySelectorAll('.blank-input').forEach(input => {
-            input.disabled = false;
-        });
     }
 
     function checkAnswers() {
@@ -260,6 +252,10 @@
             let correctBlanks = 0;
             const answers = qData.answers;
             const block = document.querySelector(`.question-block:nth-child(${qIndex + 1})`);
+            
+            // Remove old feedback before adding new
+            block.querySelectorAll('.feedback-block').forEach(el => el.remove());
+
             const feedbackContainer = document.createElement('div');
             feedbackContainer.style.marginTop = '15px';
             feedbackContainer.innerHTML = '<strong>Feedback:</strong><br>';
@@ -274,33 +270,41 @@
                 if (!inputElement) return;
 
                 const submittedAnswer = inputElement.value.trim();
-                const isCorrect = submittedAnswer.toLowerCase() === correctAnswer.toLowerCase();
                 
-                inputElement.disabled = true; // Disable after submission
+                // Normalizing answers for slightly better comparison
+                const normSubmitted = submittedAnswer.replace(/['"]/g, '').toLowerCase(); // Remove quotes for flexible comparison
+                const normCorrect = correctAnswer.replace(/['"]/g, '').toLowerCase();
 
+                const isCorrect = normSubmitted === normCorrect;
+                
+                // Permanently disable and style the input after checking
+                inputElement.disabled = true; 
+                inputElement.style.borderColor = isCorrect ? 'green' : 'red';
+                inputElement.style.color = isCorrect ? 'green' : 'red';
+                
                 if (isCorrect) {
                     correctBlanks++;
                     feedbackHTML += `Blank ${bIndex + 1}: <span class="feedback-blank correct-answer">✔ Correct</span>. `;
                 } else {
-                    feedbackHTML += `Blank ${bIndex + 1}: <span class="feedback-blank incorrect-answer">✘ Incorrect. Correct was: ${correctAnswer}</span>. `;
+                    feedbackHTML += `Blank ${bIndex + 1}: <span class="feedback-blank incorrect-answer">✘ Incorrect. Correct was: <strong>${correctAnswer}</strong></span>. `;
                 }
             });
 
             totalScore += correctBlanks;
             feedbackContainer.innerHTML += feedbackHTML;
             
-            // Remove old feedback if re-submitting (not possible here, but good practice)
-            block.querySelectorAll('.feedback-block').forEach(el => el.remove());
-
             feedbackContainer.className = 'feedback-block';
             block.appendChild(feedbackContainer);
         });
 
+        // Change submit button text to reflect final action
+        submitButton.textContent = 'Results Displayed Above';
+        submitButton.disabled = true;
+        
         showResults(totalScore, totalBlanks);
     }
 
     function showResults(totalScore, totalBlanks) {
-        submitButton.style.display = 'none';
         
         const percentage = ((totalScore / totalBlanks) * 100).toFixed(1);
         
@@ -316,11 +320,7 @@
         `;
     }
 
-    // Initialize the quiz
-    document.addEventListener('DOMContentLoaded', () => {
-        // Use a small timeout to ensure DOM is ready before enabling
-        setTimeout(enableInputs, 100);
-    });
+    // The quiz now starts by waiting for the start button click.
 </script>
 
 </body>
