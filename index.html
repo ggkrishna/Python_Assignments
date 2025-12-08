@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Assignments</title>
+
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text: #111827;
+      --accent: #2563eb;
+      --accent-hover: #1e40af;
+      --border: #e5e7eb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1f2937;
+        --card-bg: #374151;
+        --text: #f9fafb;
+        --accent: #60a5fa;
+        --accent-hover: #93c5fd;
+        --border: #4b5563;
+      }
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 2.4rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    #searchBox {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      background: var(--card-bg);
+      color: var(--text);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgb(0 0 0 / 0.06);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+
+    a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+  </style>
+
+  <script>
+    function filterCards() {
+      const query = document.getElementById("searchBox").value.toLowerCase();
+      const cards = document.querySelectorAll(".card");
+
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? "block" : "none";
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>📘 Python Assignments</h1>
+
+    <input id="searchBox" onkeyup="filterCards()" placeholder="Search files..." />
+
+    <div class="grid">
+      <div class="card"><a href="datastructures.html">datastructures.html</a></div>
+      <div class="card"><a href="dictionary_methods.html">dictionary_methods.html</a></div>
+      <div class="card"><a href="iterator_generator.html">iterator_generator.html</a></div>
+      <div class="card"><a href="list_methods.html">list_methods.html</a></div>
+      <div class="card"><a href="lists1.html">lists1.html</a></div>
+      <div class="card"><a href="lists2.html">lists2.html</a></div>
+      <div class="card"><a href="mutable_immutable.html">mutable_immutable.html</a></div>
+      <div class="card"><a href="string_methods.html">string_methods.html</a></div>
+      <div class="card"><a href="strings.html">strings.html</a></div>
+    </div>
+  </div>
+</body>
+</html>
