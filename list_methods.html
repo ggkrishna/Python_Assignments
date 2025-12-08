@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python List Methods Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        
+        /* Custom scrollbar for card content if it gets too long */
+        .card-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .card-content::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-800">
+
+    <div class="w-full max-w-2xl">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Python List Methods</h1>
+            <p class="text-slate-600">Master list manipulation, slicing, and mutability</p>
+        </header>
+
+        <!-- Flashcard Container -->
+        <div class="perspective-1000 w-full h-80 cursor-pointer group" onclick="flipCard()">
+            <div id="card-inner" class="relative w-full h-full text-center transition-transform duration-500 transform-style-3d shadow-xl rounded-2xl">
+                
+                <!-- Front Side -->
+                <div class="absolute w-full h-full bg-white rounded-2xl flex flex-col items-center justify-center p-8 backface-hidden border-2 border-slate-200">
+                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-4">Question</span>
+                    <div id="front-text" class="card-content text-2xl font-medium overflow-y-auto max-h-full">
+                        <!-- Content injected via JS -->
+                    </div>
+                    <div class="absolute bottom-4 text-slate-400 text-sm">Click to flip</div>
+                </div>
+
+                <!-- Back Side -->
+                <div class="absolute w-full h-full bg-slate-800 text-white rounded-2xl flex flex-col items-center justify-center p-8 backface-hidden rotate-y-180">
+                    <span class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-4">Answer</span>
+                    <div id="back-text" class="card-content text-xl leading-relaxed overflow-y-auto max-h-full font-mono">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-between mt-8 select-none">
+            <button onclick="prevCard()" class="flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-full shadow-sm border border-slate-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" id="btn-prev">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Previous
+            </button>
+
+            <div class="text-slate-500 font-medium">
+                <span id="current-index">1</span> / <span id="total-count">25</span>
+            </div>
+
+            <button onclick="nextCard()" class="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-md transition-all active:scale-95" id="btn-next">
+                Next
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-200 h-1.5 mt-8 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Shuffle Button -->
+        <div class="mt-6 text-center">
+             <button onclick="shuffleCards()" class="text-sm text-slate-500 hover:text-emerald-600 underline decoration-dotted transition-colors">
+                Shuffle Cards
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const flashcardsData = [
+            { front: "Method to add an item to the end of the list", back: "append(item)" },
+            { front: "Method to add multiple items from another list to the end", back: "extend(iterable)" },
+            { front: "Difference between append() and extend()", back: "append() adds the argument as a single element; extend() adds each element of the argument individually." },
+            { front: "Method to insert an item at a specific position", back: "insert(index, item)" },
+            { front: "Method to remove the first item with a specific value", back: "remove(value)" },
+            { front: "What happens if remove() doesn't find the value?", back: "It raises a ValueError." },
+            { front: "Method to remove and return an item at a specific index", back: "pop(index) (index is optional, defaults to -1)" },
+            { front: "Method to remove all items from the list", back: "clear()" },
+            { front: "Method to find the index of the first item with a specific value", back: "index(value)" },
+            { front: "Method to count how many times an item appears in the list", back: "count(value)" },
+            { front: "Method to sort the list in place (modifies original)", back: "sort()" },
+            { front: "Function to return a new sorted list (does not modify original)", back: "sorted(list)" },
+            { front: "Method to reverse the elements of the list in place", back: "reverse()" },
+            { front: "Syntax to create a shallow copy of a list", back: "list.copy() or list[:] or list(original_list)" },
+            { front: "How to access the last element of a list", back: "list[-1]" },
+            { front: "Slicing syntax to reverse a list (creates a new list)", back: "list[::-1]" },
+            { front: "Output of `[1, 2] + [3, 4]`", back: "[1, 2, 3, 4] (Concatenation)" },
+            { front: "Output of `[1] * 3`", back: "[1, 1, 1] (Repetition)" },
+            { front: "Are Python lists mutable?", back: "Yes, you can change items, add items, and delete items after creation." },
+            { front: "Statement to delete an item by index (not a method)", back: "del list[index]" },
+            { front: "Expression to create a list of squares from 0 to 4", back: "[x**2 for x in range(5)]" },
+            { front: "How to check if an item exists in a list", back: "`item in list` (Returns True/False)" },
+            { front: "Function to get the number of items in a list", back: "len(list)" },
+            { front: "Output of `list(\"Hello\")`", back: "['H', 'e', 'l', 'l', 'o']" },
+            { front: "How to access index 1 of the first sublist in `x = [[a,b], [c,d]]`", back: "x[0][1]" }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Elements
+        const cardInner = document.getElementById('card-inner');
+        const frontText = document.getElementById('front-text');
+        const backText = document.getElementById('back-text');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPrev = document.getElementById('btn-prev');
+
+        // Initialize
+        function init() {
+            totalCountEl.textContent = flashcardsData.length;
+            updateCard();
+        }
+
+        function updateCard() {
+            // Reset flip state if needed
+            if (isFlipped) {
+                cardInner.classList.remove('rotate-y-180');
+                isFlipped = false;
+                // Wait for flip back before changing content
+                setTimeout(setContent, 200);
+            } else {
+                setContent();
+            }
+        }
+
+        function setContent() {
+            const card = flashcardsData[currentIndex];
+            frontText.textContent = card.front;
+            backText.textContent = card.back;
+            
+            // Update UI counters
+            currentIndexEl.textContent = currentIndex + 1;
+            
+            // Update Progress Bar
+            const progress = ((currentIndex + 1) / flashcardsData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Button states
+            btnPrev.disabled = currentIndex === 0;
+            btnPrev.style.opacity = currentIndex === 0 ? "0.5" : "1";
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('rotate-y-180');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < flashcardsData.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                // Loop back to start
+                currentIndex = 0;
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates shuffle
+            for (let i = flashcardsData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardsData[i], flashcardsData[j]] = [flashcardsData[j], flashcardsData[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+                e.preventDefault(); // prevent scrolling
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            }
+        });
+
+        init();
+
+    </script>
+</body>
+</html>

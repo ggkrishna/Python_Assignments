@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generators & Iterators Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #f1f5f9;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #d946ef; /* Fuchsia for this topic */
+            font-size: 0.9em;
+        }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .option-btn:disabled { cursor: default; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-fuchsia-600 text-white p-1.5 rounded-lg">
+                    <i class="fa-solid fa-infinity text-lg"></i>
+                </div>
+                <h1 class="font-bold text-lg tracking-tight">Gen & Iter Quiz</h1>
+            </div>
+            <div class="text-sm font-medium text-slate-500">
+                Score: <span id="score-display" class="text-fuchsia-600 font-bold">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="max-w-xl w-full bg-white rounded-2xl shadow-xl p-8 text-center fade-in">
+            <div class="w-20 h-20 bg-fuchsia-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-gears text-3xl text-fuchsia-600"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-4">Generators & Iterators</h2>
+            <p class="text-slate-600 mb-8">Test your understanding of lazy evaluation, the `yield` keyword, and the iterator protocol.</p>
+            <button onclick="startQuiz()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-fuchsia-600/20">
+                Start Quiz
+            </button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="max-w-2xl w-full hidden">
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                    <span>Question <span id="current-q-num">1</span>/20</span>
+                    <span>Progress</span>
+                </div>
+                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-fuchsia-600 transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-100 fade-in" id="question-card">
+                <div class="p-6 md:p-8">
+                    <!-- Hint Toggle -->
+                    <div class="flex justify-end mb-4">
+                        <button onclick="toggleHint()" class="text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded-full transition-colors flex items-center gap-1">
+                            <i class="fa-regular fa-lightbulb"></i> <span id="hint-text-btn">Show Hint</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Hint Content -->
+                    <div id="hint-box" class="hidden mb-6 bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm text-amber-800 flex gap-2">
+                        <i class="fa-solid fa-circle-info mt-0.5"></i>
+                        <span id="hint-content"></span>
+                    </div>
+
+                    <!-- Question Text -->
+                    <h3 id="question-text" class="text-xl font-semibold text-slate-800 mb-8 leading-relaxed"></h3>
+
+                    <!-- Options Grid -->
+                    <div id="options-container" class="grid gap-3"></div>
+                </div>
+
+                <!-- Feedback Section -->
+                <div id="feedback-section" class="hidden border-t border-slate-100 bg-slate-50 p-6 md:p-8">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div id="feedback-icon" class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"></div>
+                        <div>
+                            <h4 id="feedback-title" class="font-bold text-lg mb-1"></h4>
+                            <p id="feedback-rationale" class="text-slate-600 text-sm leading-relaxed"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="next-btn" onclick="nextQuestion()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2">
+                            Next Question <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="max-w-xl w-full bg-white rounded-2xl shadow-xl p-8 text-center hidden fade-in">
+            <div class="w-24 h-24 mx-auto mb-6 relative">
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="#f1f5f9" stroke-width="8" fill="none"></circle>
+                    <circle id="score-circle" cx="48" cy="48" r="40" stroke="#d946ef" stroke-width="8" fill="none" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="transition-all duration-1000 ease-out"></circle>
+                </svg>
+                <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center flex-col">
+                    <span id="final-score" class="text-2xl font-bold text-slate-800">0</span>
+                    <span class="text-xs text-slate-500 font-medium">/ 20</span>
+                </div>
+            </div>
+            
+            <h2 id="result-title" class="text-2xl font-bold mb-2">Quiz Completed!</h2>
+            <p id="result-msg" class="text-slate-600 mb-8"></p>
+            
+            <button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-8 rounded-xl transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> Retake Quiz
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        const questions = [
+            {
+                q: "What is the primary difference between a `return` statement and a `yield` statement?",
+                hint: "One stops the function completely, the other pauses it.",
+                options: [
+                    { text: "`return` returns a value and exits; `yield` returns a value and pauses execution.", correct: true, rationale: "`yield` saves the state of the function, allowing it to resume where it left off when `next()` is called." },
+                    { text: "`yield` is only used in classes; `return` is used in functions.", correct: false, rationale: "`yield` is specifically used in functions to turn them into generators." },
+                    { text: "`return` can return multiple values; `yield` can only return one.", correct: false, rationale: "Both can return single or multiple values (as tuples)." },
+                    { text: "There is no difference.", correct: false, rationale: "They are fundamentally different in control flow." }
+                ]
+            },
+            {
+                q: "Which method must an object implement to be considered an **Iterable**?",
+                hint: "This method allows the object to be passed to the `iter()` function.",
+                options: [
+                    { text: "`__next__`", correct: false, rationale: "`__next__` is required for *Iterators*, not necessarily all Iterables." },
+                    { text: "`__iter__`", correct: true, rationale: "The `__iter__` method is required to return an iterator object." },
+                    { text: "`__yield__`", correct: false, rationale: "There is no `__yield__` magic method in Python." },
+                    { text: "`__loop__`", correct: false, rationale: "This is not a standard Python magic method." }
+                ]
+            },
+            {
+                q: "What exception is raised when an iterator runs out of values?",
+                hint: "It signals the loop to 'Stop'.",
+                options: [
+                    { text: "IndexError", correct: false, rationale: "This occurs when accessing a list index out of bounds." },
+                    { text: "ValueError", correct: false, rationale: "This occurs when a function receives an argument of correct type but inappropriate value." },
+                    { text: "StopIteration", correct: true, rationale: "Python's `for` loops automatically catch this exception to stop iterating." },
+                    { text: "EndIteration", correct: false, rationale: "This is not a built-in Python exception." }
+                ]
+            },
+            {
+                q: "What is the result of `next(range(5))`?",
+                hint: "`range` is an iterable, not an iterator.",
+                options: [
+                    { text: "0", correct: false, rationale: "You cannot call `next()` directly on a range object." },
+                    { text: "1", correct: false, rationale: "Range objects must be converted to an iterator first." },
+                    { text: "TypeError", correct: true, rationale: "The range object is an iterable, but not an iterator. You must call `iter(range(5))` first." },
+                    { text: "StopIteration", correct: false, rationale: "This would happen if an iterator was empty, but here the type itself is wrong." }
+                ]
+            },
+            {
+                q: "Which of the following creates a **generator expression**?",
+                hint: "It looks like a list comprehension but uses different brackets.",
+                options: [
+                    { text: "`[x for x in range(10)]`", correct: false, rationale: "Square brackets `[]` create a List Comprehension (evaluates immediately)." },
+                    { text: "`(x for x in range(10))`", correct: true, rationale: "Parentheses `()` create a Generator Expression (evaluates lazily)." },
+                    { text: "`{x for x in range(10)}`", correct: false, rationale: "Curly braces `{}` create a Set Comprehension." },
+                    { text: "`generator(x for x in range(10))`", correct: false, rationale: "This is not valid syntax for creation." }
+                ]
+            },
+            {
+                q: "What is a major advantage of using generators over lists for large datasets?",
+                hint: "Think about RAM usage.",
+                options: [
+                    { text: "Generators are faster to iterate over.", correct: false, rationale: "They are roughly the same speed or slightly slower due to overhead; speed is not the primary advantage." },
+                    { text: "Generators support indexing (e.g., `gen[0]`).", correct: false, rationale: "Generators do not support indexing or slicing." },
+                    { text: "Generators are memory efficient.", correct: true, rationale: "They produce items one by one rather than loading the entire dataset into memory at once." },
+                    { text: "Generators can be iterated over multiple times.", correct: false, rationale: "Generators can strictly be iterated over only once." }
+                ]
+            },
+            {
+                q: "What happens if you try to loop over a generator a second time?",
+                hint: "Generators are 'one-time use'.",
+                options: [
+                    { text: "It restarts from the beginning.", correct: false, rationale: "Generators do not reset automatically." },
+                    { text: "It raises a StopIteration exception immediately.", correct: false, rationale: "The loop will simply do nothing because the generator is already exhausted." },
+                    { text: "The loop yields nothing (it is empty).", correct: true, rationale: "Once exhausted, a generator cannot be reused. You must create a new one." },
+                    { text: "It raises a RuntimeError.", correct: false, rationale: "It does not raise an error; it just acts as an empty container." }
+                ]
+            },
+            {
+                q: "Which function converts an iterable (like a list) into an iterator?",
+                hint: "It's a built-in function with 4 letters.",
+                options: [
+                    { text: "`next()`", correct: false, rationale: "`next()` retrieves items *from* an iterator." },
+                    { text: "`loop()`", correct: false, rationale: "Not a Python function." },
+                    { text: "`iter()`", correct: true, rationale: "`iter(my_list)` returns an iterator for that list." },
+                    { text: "`convert()`", correct: false, rationale: "Not a Python function." }
+                ]
+            },
+            {
+                q: "Can a generator function contain a `return` statement?",
+                hint: "In Python 3+, yes, but what does it do?",
+                options: [
+                    { text: "No, it raises a SyntaxError.", correct: false, rationale: "This was true in older Python versions, but allowed in Python 3." },
+                    { text: "Yes, it raises StopIteration with the returned value.", correct: true, rationale: "`return value` inside a generator breaks the loop and attaches `value` to the StopIteration exception." },
+                    { text: "Yes, it outputs the value like `yield`.", correct: false, rationale: "`return` stops the generator permanently, unlike `yield`." },
+                    { text: "Yes, it restarts the generator.", correct: false, rationale: "Return implies the end of the function execution." }
+                ]
+            },
+            {
+                q: "What is the output of this code?\n`def gen(): yield 1; yield 2`\n`g = gen(); print(next(g)); print(next(g))`",
+                hint: "Follow the yields step by step.",
+                options: [
+                    { text: "1 then 2", correct: true, rationale: "The first `next()` gets 1, the second `next()` gets 2." },
+                    { text: "1 then 1", correct: false, rationale: "The generator remembers its state and moves forward." },
+                    { text: "[1, 2]", correct: false, rationale: "`next()` returns single items, not a list." },
+                    { text: "Error", correct: false, rationale: "The code is valid." }
+                ]
+            },
+            {
+                q: "Is a list `[1, 2, 3]` an Iterator?",
+                hint: "Can you call `next()` on a list directly?",
+                options: [
+                    { text: "Yes", correct: false, rationale: "A list is an *Iterable*, but not an *Iterator*. You cannot call `next()` on it directly." },
+                    { text: "No", correct: true, rationale: "It is an Iterable. It has `__iter__` but lacks `__next__`." },
+                    { text: "Only if it contains numbers.", correct: false, rationale: "Content type doesn't matter." },
+                    { text: "Only if created with `list()`.", correct: false, rationale: "Creation method doesn't change the type definition." }
+                ]
+            },
+            {
+                q: "Which statement is true regarding `range(10000000)` in Python 3?",
+                hint: "Does it create a list of 10 million numbers immediately?",
+                options: [
+                    { text: "It creates a huge list in memory immediately.", correct: false, rationale: "That was `range()` in Python 2. In Python 3, `range` is lazy." },
+                    { text: "It uses a small, constant amount of memory.", correct: true, rationale: "Python 3 `range` objects calculate values on the fly, similar to a generator (though technically a sequence)." },
+                    { text: "It returns an iterator.", correct: false, rationale: "`range` returns a lazy iterable sequence, not an iterator directly (you still need `iter()` to call next)." },
+                    { text: "It is slower than a list for small ranges.", correct: false, rationale: "Performance is generally comparable for iteration." }
+                ]
+            },
+            {
+                q: "What is 'lazy evaluation'?",
+                hint: "Don't do work until you absolutely have to.",
+                options: [
+                    { text: "Executing code slowly to prevent CPU overheating.", correct: false, rationale: "It's about memory/logic efficiency, not hardware protection." },
+                    { text: "Evaluating expressions only when their value is needed.", correct: true, rationale: "This allows working with infinite streams or massive datasets." },
+                    { text: "Writing code that is short and concise.", correct: false, rationale: "That is generally called 'clean code' or 'syntactic sugar'." },
+                    { text: "Delaying imports until the end of the file.", correct: false, rationale: "Lazy imports exist but 'lazy evaluation' is a broader concept." }
+                ]
+            },
+            {
+                q: "How do you create an infinite sequence using a generator?",
+                hint: "Use a loop that never ends.",
+                options: [
+                    { text: "You cannot create infinite sequences.", correct: false, rationale: "Generators are perfect for this because they don't store the sequence." },
+                    { text: "Use `while True: yield value`.", correct: true, rationale: "Since `yield` pauses execution, the `while True` loop won't crash the program; it just waits for the next request." },
+                    { text: "Use `for i in range(infinity):`.", correct: false, rationale: "There is no `infinity` integer in standard Python range." },
+                    { text: "Use `return` inside a loop.", correct: false, rationale: "`return` would stop the loop immediately after the first value." }
+                ]
+            },
+            {
+                q: "Can you slice a generator (e.g. `gen[10:20]`)?",
+                hint: "Do generators know what's at index 10 without calculating 0-9?",
+                options: [
+                    { text: "Yes, it works just like a list.", correct: false, rationale: "Generators do not support random access." },
+                    { text: "No, generators are not subscriptable.", correct: true, rationale: "To slice, you must use `itertools.islice()` or convert to a list first." },
+                    { text: "Only if the generator is finite.", correct: false, rationale: "Even finite generators don't support indexing." },
+                    { text: "Yes, but it's very slow.", correct: false, rationale: "It throws a TypeError immediately." }
+                ]
+            },
+            {
+                q: "What does the `yield from` syntax do?",
+                hint: "It delegates work to another generator.",
+                options: [
+                    { text: "It yields a value from a specific variable.", correct: false, rationale: "That is just standard `yield`." },
+                    { text: "It yields all values from a sub-iterator/generator.", correct: true, rationale: "It acts as a shortcut for `for x in sub_gen: yield x`." },
+                    { text: "It returns from the generator.", correct: false, rationale: "No, it yields values." },
+                    { text: "It stops the generator.", correct: false, rationale: "It runs until the sub-generator is exhausted." }
+                ]
+            },
+            {
+                q: "Which module provides advanced tools for working with iterators (e.g. `chain`, `cycle`)?",
+                hint: "Standard library module for iteration tools.",
+                options: [
+                    { text: "functools", correct: false, rationale: "Functools is for higher-order functions like decorators." },
+                    { text: "collections", correct: false, rationale: "Collections provides container datatypes." },
+                    { text: "itertools", correct: true, rationale: "`itertools` provides powerful functions for creating and manipulating iterators." },
+                    { text: "math", correct: false, rationale: "Math is for mathematical functions." }
+                ]
+            },
+            {
+                q: "What is the memory consumption of `(i for i in range(1000))` vs `[i for i in range(1000)]`?",
+                hint: "Generator vs List.",
+                options: [
+                    { text: "The generator uses significantly less memory.", correct: true, rationale: "The generator stores only the code/state, while the list stores 1000 integers." },
+                    { text: "The list uses less memory.", correct: false, rationale: "Lists must allocate memory for all elements." },
+                    { text: "They are identical.", correct: false, rationale: "Generators are lazy; lists are eager." },
+                    { text: "The generator uses more memory due to overhead.", correct: false, rationale: "Generator overhead is tiny compared to storing data." }
+                ]
+            },
+            {
+                q: "Can you loop over a file object in Python?",
+                hint: "File IO.",
+                options: [
+                    { text: "No, you must use `readlines()`.", correct: false, rationale: "While `readlines()` works, it loads the whole file. You can loop directly." },
+                    { text: "Yes, file objects are iterators that yield lines.", correct: true, rationale: "This is the most memory-efficient way to read large files." },
+                    { text: "Yes, but it reads character by character.", correct: false, rationale: "By default, iteration is line-based." },
+                    { text: "Only if the file is opened in binary mode.", correct: false, rationale: "It works in text mode too." }
+                ]
+            },
+            {
+                q: "What does `list(generator_obj)` do?",
+                hint: "Forcing evaluation.",
+                options: [
+                    { text: "Converts the generator code to a list of strings.", correct: false, rationale: "It doesn't access the source code." },
+                    { text: "Consumes the entire generator and stores all values in a list.", correct: true, rationale: "This 'exhausts' the generator and loads everything into memory." },
+                    { text: "Returns the first item in a list.", correct: false, rationale: "It consumes ALL items." },
+                    { text: "Raises an error because generators aren't lists.", correct: false, rationale: "The list constructor accepts any iterable." }
+                ]
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const hintBox = document.getElementById('hint-box');
+        const hintContent = document.getElementById('hint-content');
+        const hintBtnText = document.getElementById('hint-text-btn');
+        const currentQNum = document.getElementById('current-q-num');
+        const progressBar = document.getElementById('progress-bar');
+        const feedbackSection = document.getElementById('feedback-section');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackRationale = document.getElementById('feedback-rationale');
+        const feedbackIcon = document.getElementById('feedback-icon');
+        const scoreDisplay = document.getElementById('score-display');
+        const nextBtn = document.getElementById('next-btn');
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function formatText(text) {
+            return text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        }
+
+        function loadQuestion() {
+            const q = questions[currentIdx];
+            
+            // Reset UI
+            feedbackSection.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            hintBox.classList.add('hidden');
+            hintBtnText.textContent = 'Show Hint';
+            
+            // Update Progress
+            currentQNum.textContent = currentIdx + 1;
+            const progress = ((currentIdx) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Set Content
+            questionText.innerHTML = formatText(q.q);
+            hintContent.innerHTML = formatText(q.hint);
+
+            // Create Buttons
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-fuchsia-400 hover:bg-fuchsia-50 bg-white font-medium text-slate-700 relative`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0 option-letter">${String.fromCharCode(65 + index)}</div>
+                        <span>${formatText(opt.text)}</span>
+                    </div>
+                `;
+                btn.onclick = () => selectOption(btn, opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function toggleHint() {
+            if (hintBox.classList.contains('hidden')) {
+                hintBox.classList.remove('hidden');
+                hintBox.classList.add('fade-in');
+                hintBtnText.textContent = 'Hide Hint';
+            } else {
+                hintBox.classList.add('hidden');
+                hintBtnText.textContent = 'Show Hint';
+            }
+        }
+
+        function selectOption(selectedBtn, optionData) {
+            const allBtns = optionsContainer.querySelectorAll('button');
+            allBtns.forEach(btn => btn.disabled = true);
+
+            if (optionData.correct) {
+                styleButton(selectedBtn, 'correct');
+                score++;
+                scoreDisplay.textContent = score;
+                showFeedback(true, optionData.rationale);
+            } else {
+                styleButton(selectedBtn, 'incorrect');
+                const correctOptionIndex = questions[currentIdx].options.findIndex(o => o.correct);
+                const correctBtn = allBtns[correctOptionIndex];
+                styleButton(correctBtn, 'correct');
+                showFeedback(false, optionData.rationale);
+            }
+        }
+
+        function styleButton(btn, type) {
+            btn.classList.remove('border-slate-200', 'hover:border-fuchsia-400', 'hover:bg-fuchsia-50', 'bg-white');
+            const circle = btn.querySelector('.option-letter');
+            circle.classList.remove('border-slate-300', 'text-slate-400');
+            circle.classList.add('border-white', 'text-white');
+
+            if (type === 'correct') {
+                btn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                circle.classList.add('bg-green-500');
+                circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                btn.classList.add('bg-red-50', 'border-red-400', 'text-red-800');
+                circle.classList.add('bg-red-500');
+                circle.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            }
+        }
+
+        function showFeedback(isCorrect, rationale) {
+            feedbackSection.classList.remove('hidden');
+            feedbackSection.classList.add('fade-in');
+            
+            if (isCorrect) {
+                feedbackTitle.textContent = "Correct!";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-green-700";
+                feedbackIcon.className = "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-green-100 text-green-600";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                feedbackTitle.textContent = "Not quite...";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-red-700";
+                feedbackIcon.className = "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-red-100 text-red-600";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            }
+
+            feedbackRationale.innerHTML = formatText(rationale);
+            feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            if (currentIdx === questions.length - 1) {
+                nextBtn.innerHTML = 'See Results <i class="fa-solid fa-chart-simple"></i>';
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIdx < questions.length - 1) {
+                currentIdx++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            document.getElementById('final-score').textContent = score;
+            const circle = document.getElementById('score-circle');
+            const circumference = 251.2;
+            const offset = circumference - (score / questions.length) * circumference;
+            setTimeout(() => { circle.style.strokeDashoffset = offset; }, 100);
+
+            const msg = document.getElementById('result-msg');
+            const title = document.getElementById('result-title');
+            
+            if (score === questions.length) {
+                title.textContent = "Master of Iteration!";
+                msg.textContent = "You clearly understand Python's laziest features perfectly.";
+            } else if (score >= 15) {
+                title.textContent = "Great Job!";
+                msg.textContent = "You have a solid grasp of generators and iterators.";
+            } else if (score >= 10) {
+                title.textContent = "Good Start";
+                msg.textContent = "Review the concepts of 'yield' vs 'return' and try again.";
+            } else {
+                title.textContent = "Keep Learning";
+                msg.textContent = "Don't worry, generators are a tricky topic! Review the study guide and retry.";
+            }
+        }
+    </script>
+</body>
+</html>
+

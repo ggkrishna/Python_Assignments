@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Mutability Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        
+        /* Custom scrollbar for card content if it gets too long */
+        .card-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .card-content::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-800">
+
+    <div class="w-full max-w-2xl">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Python Mutability</h1>
+            <p class="text-slate-600">Understand Mutable vs. Immutable types and memory references</p>
+        </header>
+
+        <!-- Flashcard Container -->
+        <div class="perspective-1000 w-full h-80 cursor-pointer group" onclick="flipCard()">
+            <div id="card-inner" class="relative w-full h-full text-center transition-transform duration-500 transform-style-3d shadow-xl rounded-2xl">
+                
+                <!-- Front Side -->
+                <div class="absolute w-full h-full bg-white rounded-2xl flex flex-col items-center justify-center p-8 backface-hidden border-2 border-slate-200">
+                    <span class="text-xs font-bold text-purple-500 uppercase tracking-wider mb-4">Question</span>
+                    <div id="front-text" class="card-content text-2xl font-medium overflow-y-auto max-h-full">
+                        <!-- Content injected via JS -->
+                    </div>
+                    <div class="absolute bottom-4 text-slate-400 text-sm">Click to flip</div>
+                </div>
+
+                <!-- Back Side -->
+                <div class="absolute w-full h-full bg-slate-800 text-white rounded-2xl flex flex-col items-center justify-center p-8 backface-hidden rotate-y-180">
+                    <span class="text-xs font-bold text-purple-300 uppercase tracking-wider mb-4">Answer</span>
+                    <div id="back-text" class="card-content text-xl leading-relaxed overflow-y-auto max-h-full font-mono">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-between mt-8 select-none">
+            <button onclick="prevCard()" class="flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-full shadow-sm border border-slate-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" id="btn-prev">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Previous
+            </button>
+
+            <div class="text-slate-500 font-medium">
+                <span id="current-index">1</span> / <span id="total-count">25</span>
+            </div>
+
+            <button onclick="nextCard()" class="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-md transition-all active:scale-95" id="btn-next">
+                Next
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-200 h-1.5 mt-8 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-purple-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Shuffle Button -->
+        <div class="mt-6 text-center">
+             <button onclick="shuffleCards()" class="text-sm text-slate-500 hover:text-purple-600 underline decoration-dotted transition-colors">
+                Shuffle Cards
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const flashcardsData = [
+            { front: "Definition of an Immutable Object", back: "An object whose state (content) cannot be modified after it is created." },
+            { front: "Definition of a Mutable Object", back: "An object whose state (content) can be modified after it is created." },
+            { front: "List 4 common Immutable types", back: "int, float, bool, str, tuple, frozenset" },
+            { front: "List 3 common Mutable types", back: "list, dict, set" },
+            { front: "What does the `id()` function return?", back: "The object's unique identifier (memory address)." },
+            { front: "If `a = 10` and `b = 10`, does `a is b` return True?", back: "Yes, because Python caches (interns) small integers." },
+            { front: "If `a = []` and `b = []`, does `a is b` return True?", back: "No. They are two distinct mutable objects in memory." },
+            { front: "What happens when you modify a string (e.g., `s += 'a'`)?", back: "A NEW string object is created. The original is not modified." },
+            { front: "What is aliasing?", back: "When two or more variables refer to the exact same object in memory." },
+            { front: "Output of: `a = [1]; b = a; b.append(2); print(a)`", back: "[1, 2] (Because 'a' and 'b' refer to the same list)" },
+            { front: "Is a tuple always immutable?", back: "The tuple structure is immutable, but it can contain mutable objects (like a list) which can be changed." },
+            { front: "Can you change `t[0]` if `t = ([1], 2)`?", back: "No, `t[0]` is a reference stored in the tuple, which cannot be reassigned." },
+            { front: "Can you change `t[0][0]` if `t = ([1], 2)`?", back: "Yes! You are modifying the list *inside* the tuple, not the tuple itself." },
+            { front: "Why are mutable default arguments (like `def f(l=[])`) dangerous?", back: "The default object is created ONCE at definition time and persists across calls, accumulating changes." },
+            { front: "How to fix the mutable default argument trap?", back: "Use `None` as the default value (e.g., `def f(l=None): if l is None: l = []`)." },
+            { front: "Effect of `x = y[:]` on a list", back: "Creates a shallow copy (new list object, but elements are references)." },
+            { front: "How to create a deep copy of an object", back: "import copy; copy.deepcopy(obj)" },
+            { front: "Are dictionary keys required to be mutable or immutable?", back: "Immutable (technically, they must be hashable)." },
+            { front: "Can a list be an element of a set?", back: "No, because lists are mutable and therefore not hashable." },
+            { front: "What does the `is` operator check?", back: "Identity (memory address equality), not value equality." },
+            { front: "What does the `==` operator check?", back: "Value equality (equivalent content)." },
+            { front: "Output of `x = (1, 2); y = x; x += (3,); print(y)`", back: "(1, 2). Tuples are immutable, so `+=` created a new tuple for x, leaving y pointing to the old one." },
+            { front: "Output of `x = [1, 2]; y = x; x += [3]; print(y)`", back: "[1, 2, 3]. Lists are mutable, so `+=` modified the object in place." },
+            { front: "Is `bytes` mutable or immutable?", back: "Immutable." },
+            { front: "Is `bytearray` mutable or immutable?", back: "Mutable." }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Elements
+        const cardInner = document.getElementById('card-inner');
+        const frontText = document.getElementById('front-text');
+        const backText = document.getElementById('back-text');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPrev = document.getElementById('btn-prev');
+
+        // Initialize
+        function init() {
+            totalCountEl.textContent = flashcardsData.length;
+            updateCard();
+        }
+
+        function updateCard() {
+            // Reset flip state if needed
+            if (isFlipped) {
+                cardInner.classList.remove('rotate-y-180');
+                isFlipped = false;
+                // Wait for flip back before changing content
+                setTimeout(setContent, 200);
+            } else {
+                setContent();
+            }
+        }
+
+        function setContent() {
+            const card = flashcardsData[currentIndex];
+            frontText.textContent = card.front;
+            backText.textContent = card.back;
+            
+            // Update UI counters
+            currentIndexEl.textContent = currentIndex + 1;
+            
+            // Update Progress Bar
+            const progress = ((currentIndex + 1) / flashcardsData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Button states
+            btnPrev.disabled = currentIndex === 0;
+            btnPrev.style.opacity = currentIndex === 0 ? "0.5" : "1";
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('rotate-y-180');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < flashcardsData.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                // Loop back to start
+                currentIndex = 0;
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates shuffle
+            for (let i = flashcardsData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardsData[i], flashcardsData[j]] = [flashcardsData[j], flashcardsData[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+                e.preventDefault(); // prevent scrolling
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            }
+        });
+
+        init();
+
+    </script>
+</body>
+</html>
+```
+```

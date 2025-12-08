@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Data Structures Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #f1f5f9;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #ef4444;
+            font-size: 0.9em;
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 text-white p-1.5 rounded-lg">
+                    <i class="fa-brands fa-python text-lg"></i>
+                </div>
+                <h1 class="font-bold text-lg tracking-tight">Python Structures Quiz</h1>
+            </div>
+            <div class="text-sm font-medium text-slate-500">
+                Score: <span id="score-display" class="text-blue-600 font-bold">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="max-w-xl w-full bg-white rounded-2xl shadow-xl p-8 text-center fade-in">
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-layer-group text-3xl text-blue-600"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-4">Ready to test your skills?</h2>
+            <p class="text-slate-600 mb-8">20 questions covering Lists, Sets, Tuples, Dictionaries, and Strings. Test your knowledge of mutability, methods, and syntax.</p>
+            <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-blue-600/20">
+                Start Quiz
+            </button>
+        </div>
+
+        <!-- Quiz Container (Hidden initially) -->
+        <div id="quiz-container" class="max-w-2xl w-full hidden">
+            
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                    <span>Question <span id="current-q-num">1</span>/20</span>
+                    <span>Progress</span>
+                </div>
+                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-blue-600 transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-100 fade-in" id="question-card">
+                <div class="p-6 md:p-8">
+                    <!-- Hint Toggle -->
+                    <div class="flex justify-end mb-4">
+                        <button onclick="toggleHint()" class="text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded-full transition-colors flex items-center gap-1">
+                            <i class="fa-regular fa-lightbulb"></i> <span id="hint-text-btn">Show Hint</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Hint Content -->
+                    <div id="hint-box" class="hidden mb-6 bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm text-amber-800 flex gap-2">
+                        <i class="fa-solid fa-circle-info mt-0.5"></i>
+                        <span id="hint-content"></span>
+                    </div>
+
+                    <!-- Question Text -->
+                    <h3 id="question-text" class="text-xl font-semibold text-slate-800 mb-8 leading-relaxed">
+                        <!-- Inserted via JS -->
+                    </h3>
+
+                    <!-- Options Grid -->
+                    <div id="options-container" class="grid gap-3">
+                        <!-- Buttons inserted via JS -->
+                    </div>
+                </div>
+
+                <!-- Feedback Section (Hidden initially) -->
+                <div id="feedback-section" class="hidden border-t border-slate-100 bg-slate-50 p-6 md:p-8">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div id="feedback-icon" class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"></div>
+                        <div>
+                            <h4 id="feedback-title" class="font-bold text-lg mb-1"></h4>
+                            <p id="feedback-rationale" class="text-slate-600 text-sm leading-relaxed"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="next-btn" onclick="nextQuestion()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2">
+                            Next Question <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen (Hidden initially) -->
+        <div id="result-screen" class="max-w-xl w-full bg-white rounded-2xl shadow-xl p-8 text-center hidden fade-in">
+            <div class="w-24 h-24 mx-auto mb-6 relative">
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="#f1f5f9" stroke-width="8" fill="none"></circle>
+                    <circle id="score-circle" cx="48" cy="48" r="40" stroke="#2563eb" stroke-width="8" fill="none" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="transition-all duration-1000 ease-out"></circle>
+                </svg>
+                <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center flex-col">
+                    <span id="final-score" class="text-2xl font-bold text-slate-800">0</span>
+                    <span class="text-xs text-slate-500 font-medium">/ 20</span>
+                </div>
+            </div>
+            
+            <h2 id="result-title" class="text-2xl font-bold mb-2">Quiz Completed!</h2>
+            <p id="result-msg" class="text-slate-600 mb-8">Great job practicing your Python skills.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div class="text-slate-500 text-xs font-medium uppercase mb-1">Correct</div>
+                    <div id="summary-correct" class="text-xl font-bold text-green-600">0</div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div class="text-slate-500 text-xs font-medium uppercase mb-1">Accuracy</div>
+                    <div id="summary-accuracy" class="text-xl font-bold text-blue-600">0%</div>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-8 rounded-xl transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> Retake Quiz
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="py-6 text-center text-slate-400 text-sm">
+        <p>Python Data Structures Mastery</p>
+    </footer>
+
+    <script>
+        // Data derived from the generated quiz JSON
+        const questions = [
+            {
+                q: "What is the return value of the list method `my_list.sort()`?",
+                hint: "This method modifies the list 'in-place'.",
+                options: [
+                    { text: "The sorted list", correct: false, rationale: "`sorted(list)` returns the sorted list, but the `.sort()` method works differently." },
+                    { text: "None", correct: true, rationale: "The `.sort()` method modifies the list in-place and returns `None` to indicate that no new object was created." },
+                    { text: "The original list (unsorted)", correct: false, rationale: "The list is modified, but the method return value itself is not the list object." },
+                    { text: "True", correct: false, rationale: "Python methods generally return `None` for in-place modifications, not a boolean success flag." }
+                ]
+            },
+            {
+                q: "Which dictionary method returns the value for a specified key if it exists, but avoids a KeyError if it doesn't?",
+                hint: "This method allows you to optionally specify a default value to return instead of crashing.",
+                options: [
+                    { text: "d[key]", correct: false, rationale: "Direct access using square brackets raises a KeyError if the key is missing." },
+                    { text: "d.find(key)", correct: false, rationale: "Dictionaries do not have a `find` method; that is for strings." },
+                    { text: "d.get(key)", correct: true, rationale: "The `get()` method returns `None` (or a specified default) if the key is not found, preventing a crash." },
+                    { text: "d.check(key)", correct: false, rationale: "There is no built-in `check` method for Python dictionaries." }
+                ]
+            },
+            {
+                q: "What happens if you try to use `my_tuple.append(5)`?",
+                hint: "Remember that tuples are immutable sequences.",
+                options: [
+                    { text: "It adds 5 to the end of the tuple.", correct: false, rationale: "Tuples do not support adding elements." },
+                    { text: "It raises an AttributeError.", correct: true, rationale: "Tuples are immutable and do not have methods like `append` or `extend` that modify them." },
+                    { text: "It creates a new tuple with the value added.", correct: false, rationale: "While you can concatenate tuples to make a new one, calling a method on an existing tuple doesn't automatically do this." },
+                    { text: "It returns None.", correct: false, rationale: "The method does not exist for tuples, so it raises an error rather than returning a value." }
+                ]
+            },
+            {
+                q: "What is the difference between `set.remove(x)` and `set.discard(x)`?",
+                hint: "One of these methods is 'safe' to call even if you aren't sure the element is in the set.",
+                options: [
+                    { text: "There is no difference; they are aliases.", correct: false, rationale: "They perform the same action but handle missing items differently." },
+                    { text: "`remove` raises a KeyError if x is missing; `discard` does nothing.", correct: true, rationale: "`remove` enforces that the item must exist, whereas `discard` is 'safe' to call even if the item isn't there." },
+                    { text: "`discard` raises a KeyError if x is missing; `remove` does nothing.", correct: false, rationale: "It is actually `remove` that is the stricter of the two methods." },
+                    { text: "`remove` deletes the item; `discard` only marks it for deletion.", correct: false, rationale: "Both methods immediately remove the element from the set if it exists." }
+                ]
+            },
+            {
+                q: "Which string method returns `True` only if all characters in the string are digits?",
+                hint: "The method name contains the word for the numbers 0-9.",
+                options: [
+                    { text: "isnumeric()", correct: false, rationale: "`isnumeric()` allows things like fractions (½), which might be broader than just standard digits depending on intent, but `isdigit` is the standard check for characters 0-9." },
+                    { text: "isdigit()", correct: true, rationale: "`isdigit()` returns True if all characters in the string are digits and there is at least one character." },
+                    { text: "isnumber()", correct: false, rationale: "There is no `isnumber()` method in Python strings." },
+                    { text: "isdecimal()", correct: false, rationale: "`isdecimal()` is even stricter (only Base 10 digits), but `isdigit` is the most common answer for 'digits'." }
+                ]
+            },
+            {
+                q: "What does `list.extend([4, 5])` do differently than `list.append([4, 5])`?",
+                hint: "Think about whether the resulting list increases in length by 1 or by the length of the new list.",
+                options: [
+                    { text: "`extend` adds elements individually; `append` adds the list as a single nested item.", correct: true, rationale: "`extend` iterates over the argument and adds each item, while `append` adds the object as-is." },
+                    { text: "`append` adds elements individually; `extend` adds the list as a single nested item.", correct: false, rationale: "This is the reverse of the actual behavior." },
+                    { text: "Both do exactly the same thing.", correct: false, rationale: "One treats the argument as a sequence of items, the other as a single item." },
+                    { text: "`extend` creates a new list; `append` modifies in-place.", correct: false, rationale: "Both methods modify the list in-place." }
+                ]
+            },
+            {
+                q: "What does the dictionary method `popitem()` remove?",
+                hint: "Think of the dictionary like a stack of plates; which one do you take off first?",
+                options: [
+                    { text: "The first item inserted.", correct: false, rationale: "Before Python 3.7, it was arbitrary; now it is LIFO (Last In, First Out)." },
+                    { text: "A random item.", correct: false, rationale: "This used to be true for older Python versions, but now dictionaries preserve order." },
+                    { text: "The item with the largest key.", correct: false, rationale: "Dictionary operations are generally based on insertion order or hash, not key value sorting." },
+                    { text: "The last item inserted.", correct: true, rationale: "Since Python 3.7, `popitem()` is guaranteed to remove and return the last key-value pair added (LIFO)." }
+                ]
+            },
+            {
+                q: "What is the output of `\"Hello World\".split(\" \", 1)`?",
+                hint: "The second argument limits the number of splits performed.",
+                options: [
+                    { text: "['Hello', 'World']", correct: true, rationale: "While the output looks similar, the maxsplit argument limits how many splits occur." },
+                    { text: "['Hello World']", correct: false, rationale: "This would happen if no separator was found." },
+                    { text: "['Hello', ' ', 'World']", correct: false, rationale: "`split` consumes the separator; it doesn't keep it in the list." },
+                    { text: "['World', 'Hello']", correct: false, rationale: "`split` does not reorder the strings." }
+                ]
+            },
+            {
+                q: "Which method would you use to find the index of an item in a tuple?",
+                hint: "This method shares the same name as the list method for finding a position.",
+                options: [
+                    { text: "find()", correct: false, rationale: "`find` is a string method, not a tuple method." },
+                    { text: "index()", correct: true, rationale: "Tuples support `index()` to return the position of the first occurrence of a value." },
+                    { text: "search()", correct: false, rationale: "There is no `search` method for tuples." },
+                    { text: "locate()", correct: false, rationale: "There is no `locate` method for tuples." }
+                ]
+            },
+            {
+                q: "What does `set_a.union(set_b)` return?",
+                hint: "Think of uniting two groups of people together into one large group.",
+                options: [
+                    { text: "None (it modifies set_a in-place)", correct: false, rationale: "`union` returns a new set. To modify in-place, you would use `update`." },
+                    { text: "A new set containing elements found in both sets.", correct: false, rationale: "That describes an intersection, not a union." },
+                    { text: "A new set containing all unique elements from both sets.", correct: true, rationale: "The union combines all elements from both sets, removing duplicates." },
+                    { text: "A new set containing elements in set_a but not in set_b.", correct: false, rationale: "That describes a difference operation." }
+                ]
+            },
+            {
+                q: "How do you remove all items from a list `my_list`?",
+                hint: "The method name represents making something transparent or empty.",
+                options: [
+                    { text: "my_list.delete()", correct: false, rationale: "There is no `delete()` method for lists." },
+                    { text: "my_list.empty()", correct: false, rationale: "`empty()` is commonly used in other languages or libraries (like NumPy), but not standard Python lists." },
+                    { text: "my_list.remove_all()", correct: false, rationale: "This method does not exist in Python." },
+                    { text: "my_list.clear()", correct: true, rationale: "The `clear()` method removes all elements from the list, leaving it empty." }
+                ]
+            },
+            {
+                q: "What does `dict.fromkeys(['a', 'b'], 0)` return?",
+                hint: "This class method constructs a new dictionary using a sequence for keys and a single value for all of them.",
+                options: [
+                    { text: "{'a': 0, 'b': 0}", correct: true, rationale: "It creates a new dictionary with keys from the iterable and all values set to the second argument." },
+                    { text: "{'a': None, 'b': None}", correct: false, rationale: "This would happen if you omitted the second argument (the default value)." },
+                    { text: "['a', 0, 'b', 0]", correct: false, rationale: "`fromkeys` returns a dictionary, not a list." },
+                    { text: "('a', 'b')", correct: false, rationale: "It does not just return the keys." }
+                ]
+            },
+            {
+                q: "Which set method removes and returns an arbitrary element?",
+                hint: "It shares a name with the list method, but because sets have no order, you don't know which one you'll get.",
+                options: [
+                    { text: "pop()", correct: true, rationale: "Since sets are unordered, `pop()` removes and returns an arbitrary element." },
+                    { text: "remove()", correct: false, rationale: "`remove` requires you to specify exactly which element to delete." },
+                    { text: "discard()", correct: false, rationale: "`discard` removes a specific element and returns `None`." },
+                    { text: "extract()", correct: false, rationale: "There is no `extract` method for sets." }
+                ]
+            },
+            {
+                q: "What does `string.strip(\"!\")` do?",
+                hint: "It cleans the specific character from the 'edges' of the string.",
+                options: [
+                    { text: "Removes all \"!\" characters from the entire string.", correct: false, rationale: "`strip` only affects the beginning and end of the string." },
+                    { text: "Removes \"!\" characters from the beginning and end of the string.", correct: true, rationale: "When an argument is passed to `strip`, it removes those specific characters from the ends." },
+                    { text: "Splits the string at \"!\".", correct: false, rationale: "That would be the `split` method." },
+                    { text: "Removes only the first \"!\" found.", correct: false, rationale: "`strip` continues removing as long as the character matches, from both ends." }
+                ]
+            },
+            {
+                q: "What is the result of `list.insert(0, 'x')` on `['y', 'z']`?",
+                hint: "Index 0 is the very beginning of the list.",
+                options: [
+                    { text: "['x', 'y', 'z']", correct: true, rationale: "It inserts 'x' at index 0, shifting other elements to the right." },
+                    { text: "['y', 'z', 'x']", correct: false, rationale: "That would be the result of `append('x')` or `insert(2, 'x')`." },
+                    { text: "['x', 'z']", correct: false, rationale: "`insert` adds an element; it does not replace the existing element at that index." },
+                    { text: "Error", correct: false, rationale: "Index 0 is a valid position for insertion." }
+                ]
+            },
+            {
+                q: "Which method updates a dictionary `d1` with key-value pairs from `d2`?",
+                hint: "This method modifies the calling dictionary to include data from another.",
+                options: [
+                    { text: "d1.add(d2)", correct: false, rationale: "Dictionaries do not have an `add` method." },
+                    { text: "d1.append(d2)", correct: false, rationale: "`append` is a list method, not a dictionary method." },
+                    { text: "d1.update(d2)", correct: true, rationale: "`update()` merges `d2` into `d1`, overwriting existing keys." },
+                    { text: "d1.merge(d2)", correct: false, rationale: "In Python 3.9+, you can use the `|` operator for merging, but `merge()` is not a standard method name." }
+                ]
+            },
+            {
+                q: "What does `my_tuple.count(x)` return?",
+                hint: "It tallies up occurrences.",
+                options: [
+                    { text: "The index of x.", correct: false, rationale: "That is what the `index()` method does." },
+                    { text: "True if x is in the tuple, False otherwise.", correct: false, rationale: "That is what the `in` operator checks." },
+                    { text: "The number of times x appears in the tuple.", correct: true, rationale: "Just like lists and strings, tuples have a `count()` method for frequency." },
+                    { text: "The total length of the tuple.", correct: false, rationale: "That is what the `len()` function does." }
+                ]
+            },
+            {
+                q: "What happens if you use `set.add(x)` when x is already in the set?",
+                hint: "Sets are collections of *unique* elements.",
+                options: [
+                    { text: "It raises a ValueError.", correct: false, rationale: "Sets handle duplicates gracefully by ignoring them." },
+                    { text: "It adds a second copy of x.", correct: false, rationale: "Sets contain only unique elements; duplicates are never stored." },
+                    { text: "It does nothing (the set remains unchanged).", correct: true, rationale: "Since sets enforce uniqueness, adding an existing element has no effect." },
+                    { text: "It replaces the old x with the new x.", correct: false, rationale: "Since the value is identical, replacing it is functionally the same as doing nothing, but conceptually it just ignores the add." }
+                ]
+            },
+            {
+                q: "Which string method swaps the case of every character (upper becomes lower, lower becomes upper)?",
+                hint: "The name implies 'swapping' the letter casing.",
+                options: [
+                    { text: "reverse()", correct: false, rationale: "Strings do not have a `reverse` method (you use slicing `[::-1]` for that)." },
+                    { text: "switch()", correct: false, rationale: "`switch` is not a Python string method." },
+                    { text: "swapcase()", correct: true, rationale: "This method inverts the case of all characters in the string." },
+                    { text: "toggle()", correct: false, rationale: "This term is often used in UI programming, but not for Python strings." }
+                ]
+            },
+            {
+                q: "What is the return value of `list.pop()` if no index is specified?",
+                hint: "It defaults to acting like a stack, taking off the item most recently added to the end.",
+                options: [
+                    { text: "The first item in the list.", correct: false, rationale: "To pop the first item, you must use `pop(0)`." },
+                    { text: "The last item in the list.", correct: true, rationale: "By default, `pop()` removes and returns the last item (index -1)." },
+                    { text: "None.", correct: false, rationale: "`pop` returns the item it removed." },
+                    { text: "A random item.", correct: false, rationale: "Lists are ordered, so `pop` is deterministic." }
+                ]
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const hintBox = document.getElementById('hint-box');
+        const hintContent = document.getElementById('hint-content');
+        const hintBtnText = document.getElementById('hint-text-btn');
+        const currentQNum = document.getElementById('current-q-num');
+        const progressBar = document.getElementById('progress-bar');
+        const feedbackSection = document.getElementById('feedback-section');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackRationale = document.getElementById('feedback-rationale');
+        const feedbackIcon = document.getElementById('feedback-icon');
+        const scoreDisplay = document.getElementById('score-display');
+        const nextBtn = document.getElementById('next-btn');
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function formatText(text) {
+            // Simple formatter to detect code backticks and wrap them in <code> tags
+            return text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        }
+
+        function loadQuestion() {
+            const q = questions[currentIdx];
+            
+            // Reset UI
+            feedbackSection.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            hintBox.classList.add('hidden');
+            hintBtnText.textContent = 'Show Hint';
+            
+            // Update Progress
+            currentQNum.textContent = currentIdx + 1;
+            const progress = ((currentIdx) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Set Content
+            questionText.innerHTML = formatText(q.q);
+            hintContent.innerHTML = formatText(q.hint);
+
+            // Create Buttons
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 bg-white font-medium text-slate-700 relative`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0 option-letter">${String.fromCharCode(65 + index)}</div>
+                        <span>${formatText(opt.text)}</span>
+                    </div>
+                `;
+                btn.onclick = () => selectOption(btn, opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function toggleHint() {
+            if (hintBox.classList.contains('hidden')) {
+                hintBox.classList.remove('hidden');
+                hintBox.classList.add('fade-in');
+                hintBtnText.textContent = 'Hide Hint';
+            } else {
+                hintBox.classList.add('hidden');
+                hintBtnText.textContent = 'Show Hint';
+            }
+        }
+
+        function selectOption(selectedBtn, optionData) {
+            // Disable all buttons
+            const allBtns = optionsContainer.querySelectorAll('button');
+            allBtns.forEach(btn => btn.disabled = true);
+
+            // Reveal Correct/Incorrect styles
+            if (optionData.correct) {
+                styleButton(selectedBtn, 'correct');
+                score++;
+                scoreDisplay.textContent = score;
+                showFeedback(true, optionData.rationale);
+            } else {
+                styleButton(selectedBtn, 'incorrect');
+                
+                // Find and highlight correct answer
+                const correctOptionIndex = questions[currentIdx].options.findIndex(o => o.correct);
+                const correctBtn = allBtns[correctOptionIndex];
+                styleButton(correctBtn, 'correct');
+                
+                showFeedback(false, optionData.rationale);
+            }
+        }
+
+        function styleButton(btn, type) {
+            btn.classList.remove('border-slate-200', 'hover:border-blue-400', 'hover:bg-blue-50', 'bg-white');
+            const circle = btn.querySelector('.option-letter');
+            circle.classList.remove('border-slate-300', 'text-slate-400');
+            circle.classList.add('border-white', 'text-white');
+
+            if (type === 'correct') {
+                btn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                circle.classList.add('bg-green-500');
+                circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                btn.classList.add('bg-red-50', 'border-red-400', 'text-red-800');
+                circle.classList.add('bg-red-500');
+                circle.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            }
+        }
+
+        function showFeedback(isCorrect, rationale) {
+            feedbackSection.classList.remove('hidden');
+            feedbackSection.classList.add('fade-in');
+            
+            if (isCorrect) {
+                feedbackTitle.textContent = "Correct!";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-green-700";
+                feedbackIcon.className = "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-green-100 text-green-600";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                feedbackTitle.textContent = "Not quite...";
+                feedbackTitle.className = "font-bold text-lg mb-1 text-red-700";
+                feedbackIcon.className = "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-red-100 text-red-600";
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            }
+
+            feedbackRationale.innerHTML = formatText(rationale);
+            
+            // Auto scroll to feedback on mobile if needed
+            feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Update Next button text if last question
+            if (currentIdx === questions.length - 1) {
+                nextBtn.innerHTML = 'See Results <i class="fa-solid fa-chart-simple"></i>';
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIdx < questions.length - 1) {
+                currentIdx++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // Animate Score
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('summary-correct').textContent = score;
+            const accuracy = Math.round((score / questions.length) * 100);
+            document.getElementById('summary-accuracy').textContent = `${accuracy}%`;
+
+            // Circle Chart Animation
+            const circle = document.getElementById('score-circle');
+            const circumference = 251.2;
+            const offset = circumference - (score / questions.length) * circumference;
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+
+            // Message
+            const msg = document.getElementById('result-msg');
+            const title = document.getElementById('result-title');
+            
+            if (score === questions.length) {
+                title.textContent = "Perfect Score!";
+                msg.textContent = "You're a Python Master! flawless victory.";
+            } else if (score >= 15) {
+                title.textContent = "Excellent Job!";
+                msg.textContent = "You have a very strong grasp of Python structures.";
+            } else if (score >= 10) {
+                title.textContent = "Good Effort!";
+                msg.textContent = "You know the basics, but a little review wouldn't hurt.";
+            } else {
+                title.textContent = "Keep Practicing";
+                msg.textContent = "Don't give up! Review the flashcards and try again.";
+            }
+        }
+    </script>
+</body>
+</html>
+```
+```

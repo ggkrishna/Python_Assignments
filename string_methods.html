@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python String Methods Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        
+        /* Custom scrollbar for card content if it gets too long */
+        .card-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .card-content::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-800">
+
+    <div class="w-full max-w-2xl">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Python String Methods</h1>
+            <p class="text-slate-600">Review your knowledge of string syntax and immutability</p>
+        </header>
+
+        <!-- Flashcard Container -->
+        <div class="perspective-1000 w-full h-80 cursor-pointer group" onclick="flipCard()">
+            <div id="card-inner" class="relative w-full h-full text-center transition-transform duration-500 transform-style-3d shadow-xl rounded-2xl">
+                
+                <!-- Front Side -->
+                <div class="absolute w-full h-full bg-white rounded-2xl flex flex-col items-center justify-center p-8 backface-hidden border-2 border-slate-200">
+                    <span class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-4">Question</span>
+                    <div id="front-text" class="card-content text-2xl font-medium overflow-y-auto max-h-full">
+                        <!-- Content injected via JS -->
+                    </div>
+                    <div class="absolute bottom-4 text-slate-400 text-sm">Click to flip</div>
+                </div>
+
+                <!-- Back Side -->
+                <div class="absolute w-full h-full bg-slate-800 text-white rounded-2xl flex flex-col items-center justify-center p-8 backface-hidden rotate-y-180">
+                    <span class="text-xs font-bold text-blue-300 uppercase tracking-wider mb-4">Answer</span>
+                    <div id="back-text" class="card-content text-xl leading-relaxed overflow-y-auto max-h-full">
+                        <!-- Content injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-between mt-8 select-none">
+            <button onclick="prevCard()" class="flex items-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-full shadow-sm border border-slate-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" id="btn-prev">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Previous
+            </button>
+
+            <div class="text-slate-500 font-medium">
+                <span id="current-index">1</span> / <span id="total-count">25</span>
+            </div>
+
+            <button onclick="nextCard()" class="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transition-all active:scale-95" id="btn-next">
+                Next
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-200 h-1.5 mt-8 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Shuffle Button -->
+        <div class="mt-6 text-center">
+             <button onclick="shuffleCards()" class="text-sm text-slate-500 hover:text-blue-600 underline decoration-dotted transition-colors">
+                Shuffle Cards
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const flashcardsData = [
+            {
+                front: "Correct syntax to join a list `words` with a space",
+                back: "\" \".join(words) (The method belongs to the separator, not the list)"
+            },
+            {
+                front: "Effect of string methods (like `replace` or `upper`) on the original variable",
+                back: "None. Strings are immutable, so the original variable is unchanged unless reassigned."
+            },
+            {
+                front: "Output of `\"a,b,c\".split(\",\")`",
+                back: "['a', 'b', 'c'] (A list of strings)"
+            },
+            {
+                front: "Method to remove leading and trailing whitespace",
+                back: "strip()"
+            },
+            {
+                front: "Difference between `find()` and `index()`",
+                back: "`find()` returns -1 if missing; `index()` raises a ValueError."
+            },
+            {
+                front: "Method to convert only the first character to uppercase",
+                back: "capitalize()"
+            },
+            {
+                front: "Difference between `title()` and `capitalize()`",
+                back: "`title()` capitalizes the first letter of EVERY word; `capitalize()` affects only the very first letter of the string."
+            },
+            {
+                front: "Return type of `isdigit()`",
+                back: "Boolean (True or False)"
+            },
+            {
+                front: "Purpose of `s.count(\"a\")`",
+                back: "Returns the number of non-overlapping occurrences of \"a\" in string `s`."
+            },
+            {
+                front: "Method to check if a string ends with a specific suffix",
+                back: "endswith()"
+            },
+            {
+                front: "Method to check if a string starts with a specific prefix",
+                back: "startswith()"
+            },
+            {
+                front: "Purpose of `s.lower()`",
+                back: "Returns a copy of the string converted to lowercase."
+            },
+            {
+                front: "Purpose of `s.upper()`",
+                back: "Returns a copy of the string converted to uppercase."
+            },
+            {
+                front: "Purpose of `s.swapcase()`",
+                back: "Converts uppercase characters to lowercase and vice versa."
+            },
+            {
+                front: "Optional third argument in `s.replace(old, new, count)`",
+                back: "count (limits the number of replacements performed)"
+            },
+            {
+                front: "Method to check if all characters are alphanumeric (letters or numbers)",
+                back: "isalnum()"
+            },
+            {
+                front: "Method to check if all characters are alphabetic letters",
+                back: "isalpha()"
+            },
+            {
+                front: "Method to check if all characters are whitespace",
+                back: "isspace()"
+            },
+            {
+                front: "Default separator used by `split()` if none is provided",
+                back: "Any whitespace string (space, tab, newline, etc.)"
+            },
+            {
+                front: "Execution order of method chaining: `s.strip().lower()`",
+                back: "Left to right (`strip` runs first, then `lower` runs on the result)"
+            },
+            {
+                front: "Method to pad a string with zeros on the left",
+                back: "zfill(width)"
+            },
+            {
+                front: "Method to remove whitespace ONLY from the left side",
+                back: "lstrip()"
+            },
+            {
+                front: "Method to remove whitespace ONLY from the right side",
+                back: "rstrip()"
+            },
+            {
+                front: "Difference between `casefold()` and `lower()`",
+                back: "`casefold()` is more aggressive and better for case-insensitive matching (e.g. handles German 'ß' vs 'ss')."
+            },
+            {
+                front: "Method to center a string within a specified width",
+                back: "center(width)"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Elements
+        const cardInner = document.getElementById('card-inner');
+        const frontText = document.getElementById('front-text');
+        const backText = document.getElementById('back-text');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPrev = document.getElementById('btn-prev');
+
+        // Initialize
+        function init() {
+            totalCountEl.textContent = flashcardsData.length;
+            updateCard();
+        }
+
+        function updateCard() {
+            // Reset flip state if needed
+            if (isFlipped) {
+                cardInner.classList.remove('rotate-y-180');
+                isFlipped = false;
+                // Wait for flip back before changing content
+                setTimeout(setContent, 200);
+            } else {
+                setContent();
+            }
+        }
+
+        function setContent() {
+            const card = flashcardsData[currentIndex];
+            frontText.textContent = card.front;
+            backText.textContent = card.back;
+            
+            // Update UI counters
+            currentIndexEl.textContent = currentIndex + 1;
+            
+            // Update Progress Bar
+            const progress = ((currentIndex + 1) / flashcardsData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Button states
+            btnPrev.disabled = currentIndex === 0;
+            btnPrev.style.opacity = currentIndex === 0 ? "0.5" : "1";
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('rotate-y-180');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextCard() {
+            // Prevent rapid clicking messing up the flip reset
+            if (currentIndex < flashcardsData.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                // Loop back to start (optional, currently just stops)
+                currentIndex = 0;
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates shuffle
+            for (let i = flashcardsData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardsData[i], flashcardsData[j]] = [flashcardsData[j], flashcardsData[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+                e.preventDefault(); // prevent scrolling
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            }
+        });
+
+        init();
+
+    </script>
+</body>
+</html>
